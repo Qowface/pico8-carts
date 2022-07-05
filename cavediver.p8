@@ -2,7 +2,15 @@ pico-8 cartridge // http://www.pico-8.com
 version 36
 __lua__
 function _init()
+	cartdata("qowface_cavediver_1")
+	high_score=dget(0)
+	
+	start_game()
+end
+
+function start_game()
 	game_over=false
+	new_high_score=false
 	make_cave()
 	make_player()
 end
@@ -13,7 +21,7 @@ function _update()
 		move_player()
 		check_hit()
 	else
-		if (btnp(5)) _init() --restart
+		if (btnp(5)) start_game() --restart
 	end
 end
 
@@ -26,6 +34,11 @@ function _draw()
 		print("game over!",44,44,7)
 		print("your score:"..player.score,34,54,7)
 		print("press ❎ to play again!",18,72,6)
+		if (new_high_score) then
+			print("new high score!",34,90,11)
+		else
+			print("high score:"..high_score,34,90,7)
+		end
 	else
 		print("score:"..player.score,2,2,7)
 	end		
@@ -67,6 +80,11 @@ function check_hit()
 			or cave[i+1].btm<player.y+7) then
 			game_over=true
 			sfx(1)
+			if (player.score>high_score) then
+				high_score=player.score
+				new_high_score=true
+				dset(0,high_score)
+			end	
 		end
 	end
 end
