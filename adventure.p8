@@ -45,14 +45,15 @@ function map_setup()
 	anim_time=30 --30 = 1 second
 	
 	--map tile settings
-	wall=0
-	key=1
-	door=2
-	anim1=3
-	anim2=4
-	text=5
-	lose=6
-	win=7
+	wall={18,32,33,34,36,37,50,52,55}
+	key={20}
+	door={52}
+	anim1={23}
+	anim2={24}
+	text={20,36,55}
+	lose={23}
+	win={7}
+	gold={36}
 end
 
 function update_map()
@@ -73,8 +74,10 @@ end
 
 function is_tile(tile_type,x,y)
 	tile=mget(x,y)
-	has_flag=fget(tile,tile_type)
-	return has_flag
+	for i=1,#tile_type do
+		if (tile==tile_type[i]) return true
+	end
+	return false
 end
 
 function can_move(x,y)
@@ -103,6 +106,12 @@ function open_door(x,y)
 	sfx(2)
 end
 
+function get_gold(x,y)
+	p.gold+=5
+	swap_tile(x,y)
+	sfx(1)
+end
+
 -->8
 --player code
 
@@ -112,6 +121,7 @@ function make_player()
 	p.y=2
 	p.sprite=1
 	p.keys=0
+	p.gold=0
 end
 
 function draw_player()
@@ -146,6 +156,8 @@ function interact(x,y)
 		get_key(x,y)
 	elseif (is_tile(door,x,y) and p.keys>0) then
 		open_door(x,y)
+	elseif (is_tile(gold,x,y)) then
+		get_gold(x,y)
 	end
 end
 
@@ -156,9 +168,10 @@ function show_inventory()
 	invx=mapx*8+40
 	invy=mapy*8+8
 	
-	rectfill(invx,invy,invx+48,invy+24,0)
+	rectfill(invx,invy,invx+48,invy+30,0)
 	print("inventory",invx+7,invy+4,7)
 	print("keys "..p.keys,invx+12,invy+14,9)
+	print("gold "..p.gold,invx+12,invy+20,9)
 end
 
 -->8
@@ -209,6 +222,7 @@ function text_setup()
 	add_text(2,3,"danger - spikes ahead!")
 	add_text(8,12,"you're almost there!")
 	add_text(7,1,"you found a key!")
+	add_text(13,2,"you found some gold!")
 end
 
 function add_text(x,y,message)
