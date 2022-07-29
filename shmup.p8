@@ -4,6 +4,38 @@ __lua__
 --shmup
 
 function _init()
+	cls(0)
+	
+	mode="start"
+	
+	blinkt=1
+end
+
+function _update()
+	blinkt+=1
+	
+	if mode=="game" then
+		update_game()
+	elseif mode=="start" then
+		update_start()
+	elseif mode=="over" then
+		update_over()
+	end
+end
+
+function _draw()
+	if mode=="game" then
+		draw_game()
+	elseif mode=="start" then
+		draw_start()
+	elseif mode=="over" then
+		draw_over()
+	end
+end
+
+function startgame()
+	mode="game"
+	
 	shipx=60 --ship position
 	shipy=60
 	shipsx=2 --ship speed
@@ -32,7 +64,43 @@ function _init()
 	end
 end
 
-function _update()
+-->8
+--tools
+
+function starfield()
+	for i=1,#starx do
+		local scol=6
+		if starspd[i]<1 then
+			scol=1
+		elseif starspd[i]<1.5 then
+			scol=13
+		end
+		pset(starx[i],stary[i],scol)
+	end
+end
+
+function animatestars()
+	for i=1,#stary do
+		local sy=stary[i]
+		sy+=starspd[i]
+		if (sy>128) sy-=128
+		stary[i]=sy
+	end
+end
+
+function blink()
+	local banim={5,5,5,5,5,5,5,5,5,5,5,6,6,7,7,6,6,5,5}
+	if blinkt>#banim then
+		blinkt=1
+	end
+	
+	return banim[blinkt]
+end
+
+-->8
+--update
+
+function update_game()
 	dx=0
 	dy=0
 	shipspr=2
@@ -47,6 +115,7 @@ function _update()
 	end
 	if (btn(2)) dy=-shipsy
 	if (btn(3)) dy=shipsy
+	if (btnp(4)) mode="over"
 	if btnp(5) then
 		bulx=shipx
 		buly=shipy-3
@@ -78,7 +147,22 @@ function _update()
 	animatestars()
 end
 
-function _draw()
+function update_start()
+	if btnp(4) or btnp(5) then
+		startgame()
+	end
+end
+
+function update_over()
+	if btnp(4) or btnp(5) then
+		mode="start"
+	end
+end
+
+-->8
+--draw
+
+function draw_game()
 	cls(0)
 	
 	starfield()
@@ -103,26 +187,16 @@ function _draw()
 	end
 end
 
--->8
-function starfield()
-	for i=1,#starx do
-		local scol=6
-		if starspd[i]<1 then
-			scol=1
-		elseif starspd[i]<1.5 then
-			scol=13
-		end
-		pset(starx[i],stary[i],scol)
-	end
+function draw_start()
+	cls(1)
+	print("my awesome shmup",34,40,12)
+	print("press any key to start",20,80,blink())
 end
 
-function animatestars()
-	for i=1,#stary do
-		local sy=stary[i]
-		sy+=starspd[i]
-		if (sy>128) sy-=128
-		stary[i]=sy
-	end
+function draw_over()
+	cls(8)
+	print("game over",48,40,2)
+	print("press any key to continue",18,80,blink())
 end
 
 __gfx__
