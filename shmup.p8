@@ -9,9 +9,11 @@ function _init()
 	mode="start"
 	
 	blinkt=1
+	t=0
 end
 
 function _update()
+	t+=1
 	blinkt+=1
 	
 	if mode=="game" then
@@ -35,6 +37,7 @@ end
 
 function startgame()
 	mode="game"
+	t=0
 	
 	ship={}
 	ship.x=60 --ship position
@@ -45,15 +48,16 @@ function startgame()
 	
 	flamespr=5 --flame sprite
 	
-	bulx=60 --bullet position
-	buly=-10
 	bulspd=4 --bullet speed
+	
+	bultimer=0
 	
 	muzzle=0 --muzzle flash
 	
-	score=10000
+	score=0
 	
-	lives=3
+	lives=4
+	invul=0
 	
 	--set up starfield
 	stars={}
@@ -69,11 +73,7 @@ function startgame()
 	
 	enemies={}
 	
-	local myen={}
-	myen.x=60
-	myen.y=5
-	myen.spr=21
-	add(enemies,myen)
+	spawnen()
 end
 
 -->8
@@ -115,6 +115,33 @@ function drwmyspr(myspr)
 	spr(myspr.spr,myspr.x,myspr.y)
 end
 
+function col(a,b)
+	local a_left=a.x
+	local a_top=a.y
+	local a_right=a.x+7
+	local a_bottom=a.y+7
+	
+	local b_left=b.x
+	local b_top=b.y
+	local b_right=b.x+7
+	local b_bottom=b.y+7
+	
+	if (a_top>b_bottom) return false
+	if (b_top>a_bottom) return false
+	if (a_left>b_right) return false
+	if (b_left>a_right) return false
+	
+	return true
+end
+
+function spawnen()
+	local myen={}
+	myen.x=rnd(120)
+	myen.y=-8
+	myen.spr=21
+	add(enemies,myen)
+end
+
 -->8
 --update
 
@@ -134,21 +161,38 @@ function update_game()
 	end
 	if (btn(2)) dy=-ship.sy
 	if (btn(3)) dy=ship.sy
-	if (btnp(4)) mode="over"
-	if btnp(5) then
-		local newbul={}
-		newbul.x=ship.x
-		newbul.y=ship.y-3
-		newbul.spr=16
-		add(buls,newbul)
-		
-		sfx(0)
-		muzzle=6
+	
+	if btn(5) then
+		if bultimer<=0 then
+			local newbul={}
+			newbul.x=ship.x
+			newbul.y=ship.y-3
+			newbul.spr=16
+			add(buls,newbul)
+			
+			sfx(0)
+			muzzle=6
+			bultimer=4
+		end
 	end
+	bultimer-=1
+	
 	
 	--move the ship
 	ship.x+=dx
 	ship.y+=dy
+	
+	--check if we hit the edge
+	if ship.x>120 then
+		ship.x=120
+	elseif ship.x<0 then
+		ship.x=0
+	end
+	if ship.y<0 then
+		ship.y=0
+	elseif ship.y>120 then
+		ship.y=120
+	end
 	
 	--move the bullets
 	for i=#buls,1,-1 do
@@ -164,7 +208,41 @@ function update_game()
 		en.spr+=0.4
 		if (en.spr>=25) en.spr=21
 		
-		if (en.y>128) del(enemies,en)
+		if en.y>128 then
+			del(enemies,en)
+			spawnen()
+		end
+	end
+	
+	--collision enemies x bullets
+	for en in all(enemies) do
+		for bul in all(buls) do
+			if col(en,bul) then
+				del(enemies,en)
+				del(buls,bul)
+				sfx(2)
+				score+=1
+				spawnen()
+			end
+		end
+	end
+	
+	--collision ship x enemies
+	if invul<=0 then
+		for en in all(enemies) do
+			if col(en,ship) then
+				lives-=1
+				sfx(1)
+				invul=60
+			end
+		end
+	else
+		invul-=1
+	end
+	
+	if lives<=0 then
+		mode="over"
+		return
 	end
 	
 	--animate flame
@@ -173,13 +251,6 @@ function update_game()
 	
 	--animate muzzle flash
 	if (muzzle>0) muzzle-=1
-	
-	--check if we hit the edge
-	if ship.x>120 then
-		ship.x=0
-	elseif ship.x<0 then
-		ship.x=120
-	end
 	
 	animatestars()
 end
@@ -204,8 +275,16 @@ function draw_game()
 	
 	starfield()
 	
-	drwmyspr(ship)
-	spr(flamespr,ship.x,ship.y+8)
+	if invul<=0 then
+		drwmyspr(ship)
+		spr(flamespr,ship.x,ship.y+8)
+	else
+		--invul state
+		if sin(t/5)<0.1 then
+			drwmyspr(ship)
+			spr(flamespr,ship.x,ship.y+8)
+		end
+	end
 	
 	--draw enemies
 	for en in all(enemies) do
@@ -263,3 +342,5 @@ __gfx__
 00999900000000000000000000000000000000000300003030000003030000300330033000000000000000000000000000000000000000000000000000000000
 __sfx__
 000100003a5503755034550325502f5502955026550225501e5501c5501855014550115500d5500a5500a00008000050000300000000000000000000000000000000000000000000000000000000000000000000
+0001000035650326502e6502c6502b650296502765025630216301e6201a6201a6201862014610116100d6100b610076100361000000000000000000000000000000000000000000000000000000000000000000
+0001000037750086503255020630116200a5200a62009620066100565005610007000070000700006200070000700006500070000700016500070000700016500070000700007000070000700007000070000700
