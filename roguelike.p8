@@ -10,6 +10,8 @@ function _init()
 	dirx={-1,1,0,0,1,1,-1,-1}
 	diry={0,0,-1,1,-1,1,1,-1}
 	
+	mob_ani={240,192}
+	
 	_upd=update_game
 	_drw=draw_game
 	startgame()
@@ -29,16 +31,9 @@ function startgame()
  buttbuff=-1
  
  mob={}
- addmob(0,2,3)
+ p_mob=addmob(1,1,1)
+ addmob(2,2,3)
  
- p_x=1
- p_y=1
- p_ox=0
- p_oy=0
- p_sox=0
- p_soy=0
- p_flip=false
- p_mov=nil
  p_t=0
  
  wind={}
@@ -66,7 +61,7 @@ function update_pturn()
 	
 	p_t=min(p_t+0.125,1)
 	
-	p_mov()
+	p_mob.mov(p_mob,p_t)
 	
 	if p_t==1 then
 		_upd=update_game
@@ -76,20 +71,20 @@ end
 function update_gameover()
 end
 
-function mov_walk()
-	p_ox=p_sox*(1-p_t)
-	p_oy=p_soy*(1-p_t)
+function mov_walk(mob,at)
+	mob.ox=mob.sox*(1-at)
+	mob.oy=mob.soy*(1-at)
 end
 
-function mov_bump()
-	local tme=p_t
+function mov_bump(mob,at)
+	local tme=at
 	
-	if p_t>0.5 then
-		tme=1-p_t
+	if at>0.5 then
+		tme=1-at
 	end
 	
-	p_ox=p_sox*tme
-	p_oy=p_soy*tme
+	mob.ox=mob.sox*tme
+	mob.oy=mob.soy*tme
 end
 
 function dobuttbuff()
@@ -122,10 +117,10 @@ function draw_game()
 	cls(0)
 	map()
 	
-	drawspr(getframe(p_ani),p_x*8+p_ox,p_y*8+p_oy,10,p_flip)
+	--drawspr(getframe(p_ani),p_x*8+p_ox,p_y*8+p_oy,10,p_flip)
 	
 	for m in all(mob) do
-		drawspr(getframe(m.ani),m.x*8,m.y*8,10,false)
+		drawspr(getframe(m.ani),m.x*8+m.ox,m.y*8+m.oy,10,m.flp)
 	end
 end
 
@@ -161,35 +156,41 @@ end
 --gameplay
 
 function moveplayer(dx,dy)
-	local destx,desty=p_x+dx,p_y+dy
+	local destx,desty=p_mob.x+dx,p_mob.y+dy
 	local tle=mget(destx,desty)
 	
 	if dx<0 then
-		p_flip=true
+		p_mob.flp=true
 	elseif dx>0 then
-		p_flip=false
+		p_mob.flp=false
 	end
 	
-	if fget(tle,0) then
-		--wall
-		p_sox,p_soy=dx*8,dy*8
-		p_ox,p_oy=0,0
-		p_t=0
-		_upd=update_pturn
-		p_mov=mov_bump
-		if fget(tle,1) then
-			trig_bump(tle,destx,desty)
-		end
-	else
+	if iswalkable(destx,desty,"checkmobs") then
 		sfx(63)
-		p_x+=dx
-		p_y+=dy
+		p_mob.x+=dx
+		p_mob.y+=dy
 		
-		p_sox,p_soy=-dx*8,-dy*8
-		p_ox,p_oy=p_sox,p_soy
+		p_mob.sox,p_mob.soy=-dx*8,-dy*8
+		p_mob.ox,p_mob.oy=p_mob.sox,p_mob.soy
 		p_t=0
 		_upd=update_pturn
-		p_mov=mov_walk
+		p_mob.mov=mov_walk
+	else
+		--not walkable
+		p_mob.sox,p_mob.soy=dx*8,dy*8
+		p_mob.ox,p_mob.oy=0,0
+		p_t=0
+		_upd=update_pturn
+		p_mob.mov=mov_bump
+		
+		local mob=getmob(destx,desty)
+		if mob==false then
+			if fget(tle,1) then
+				trig_bump(tle,destx,desty)
+			end
+		else
+			hitmob(p_mob,mob)
+		end
 	end
 end
 
@@ -217,6 +218,37 @@ function trig_bump(tle,destx,desty)
 			showmsg({"you're almost there!"})
 		end
 	end
+end
+
+function getmob(x,y)
+	for m in all(mob) do
+		if m.x==x and m.y==y then
+			return m
+		end
+	end
+	return false
+end
+
+function iswalkable(x,y,mode)
+	if mode==nil then mode="" end
+	if inbounds(x,y) then
+		local tle=mget(x,y)
+		if fget(tle,0)==false then
+			if mode=="checkmobs" then
+				return getmob(x,y)==false
+			end
+			return true
+		end
+	end
+	return false
+end
+
+function inbounds(x,y)
+	return not (x<0 or y<0 or x>15 or y>15)
+end
+
+function hitmob(atkm,defm)
+	--
 end
 
 -->8
@@ -283,9 +315,19 @@ function addmob(typ,mx,my)
 	local m={
 		x=mx,
 		y=my,
-		ani={192,193,194,195}
+		ox=0,
+		oy=0,
+		sox=0,
+		soy=0,
+		flp=false,
+		mov=nil,
+		ani={}
 	}
+	for i=0,3 do
+		add(m.ani,mob_ani[typ]+i)
+	end
 	add(mob,m)
+	return m
 end
 
 __gfx__
