@@ -55,14 +55,14 @@ function startgame()
  dmob={}
  p_mob=addmob(1,1,1)
  
- for x=0,15 do
- 	for y=0,15 do
- 		if mget(x,y)==192 then
- 			addmob(2,x,y)
- 			mset(x,y,1)
- 		end
- 	end
- end
+ --for x=0,15 do
+ --	for y=0,15 do
+ --		if mget(x,y)==192 then
+ --			addmob(2,x,y)
+ --			mset(x,y,1)
+ --		end
+ --	end
+ --end
  
  p_t=0
  
@@ -70,15 +70,12 @@ function startgame()
  -- eqp[1] - weapon
  -- eqp[2] - armor
  -- inv[1-6] - inventory
+ 
  --takeitem(1)
- --takeitem(2)
- --takeitem(3)
- --takeitem(4)
- --takeitem(5)
  
  wind={}
  float={}
- fog=blankmap(1)
+ fog=blankmap(0)
  talkwind=nil
  
  hpwind=addwind(5,5,28,13,{})
@@ -87,6 +84,8 @@ function startgame()
  _drw=draw_game
  
  unfog()
+ 
+ mapgen()
 end
 
 -->8
@@ -213,8 +212,9 @@ function dobutt(butt)
 		moveplayer(dirx[butt+1],diry[butt+1])
 	elseif butt==5 then
 		showinv()
+	elseif butt==4 then
+		mapgen()
 	end
-	--menu button
 end
 
 -->8
@@ -980,6 +980,93 @@ function freeinvslot()
 		end
 	end
 	return 0
+end
+
+-->8
+--gen
+
+function mapgen()
+	for x=0,15 do
+		for y=0,15 do
+			mset(x,y,2)
+		end
+	end
+	
+	genrooms()
+end
+
+-----------
+-- rooms
+-----------
+
+function genrooms()
+	local fmax,rmax=5,5
+	local mw,mh=6,6
+	
+	repeat
+		local r=rndroom(mw,mh)
+		if placeroom(r) then
+			rmax-=1
+		else
+			fmax-=1
+			if r.w>r.h then
+				mw=max(mw-1,3)
+			else
+				mh=max(mh-1,3)
+			end
+		end
+	until fmax<=0 or rmax<=0
+	
+end
+
+function rndroom(mw,mh)
+	--clamp max area
+	local _w=3+flr(rnd(mw-2))
+	mh=max(35/_w,3)
+	local _h=3+flr(rnd(mh-2))
+	return {
+		x=0,
+		y=0,
+		w=_w,
+		h=_h
+	}
+end
+
+function placeroom(r)
+	local cand,c={}
+	
+	for _x=0,16-r.w do
+		for _y=0,16-r.h do
+			if doesroomfit(r,_x,_y) then
+				add(cand,{x=_x,y=_y})
+			end
+		end
+	end
+	
+	if #cand==0 then return false end
+	
+	c=getrnd(cand)
+	r.x=c.x
+	r.y=c.y
+	
+	for _x=0,r.w-1 do
+		for _y=0,r.h-1 do
+			mset(_x+r.x,_y+r.y,1)
+		end
+	end
+	return true
+end
+
+function doesroomfit(r,x,y)
+	for _x=-1,r.w do
+		for _y=-2,r.h do
+			if iswalkable(_x+x,_y+y) then
+				return false
+			end
+		end
+	end
+	
+	return true
 end
 
 __gfx__
