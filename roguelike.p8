@@ -1069,6 +1069,24 @@ function doesroomfit(r,x,y)
 	return true
 end
 
+-----------
+-- maze
+-----------
+
+function getsig(x,y)
+	local sig,digit=0
+	for i=1,8 do
+		local dx,dy=x+dirx[i],y+diry[i]
+		if iswalkable(dx,dy) then
+			digit=0
+		else
+			digit=1
+		end
+		sig=bor(sig,shl(digit,8-i))
+	end
+	return sig
+end
+
 __gfx__
 000000000000000060666060000000000000000000000000aaaaaaaa00aaa00000aaa00000000000000000000000000000aaa000a0aaa0a0a000000055555550
 000000000000000000000000000000000000000000000000aaaaaaaa0a000a000a000a00066666600aaaaaa066666660a0aaa0a000000000a0aa000000000000
