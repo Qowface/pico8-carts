@@ -404,7 +404,6 @@ function moveplayer(dx,dy)
 			else
 				skipai=true
 				mset(destx,desty,1)
-				mazeworm()
 			end
 		end
 	end
@@ -997,12 +996,18 @@ function mapgen()
 		end
 	end
 	
+	rooms={}
+	roomap=blankmap(0)
+	doors={}
+	
 	genrooms()
 	mazeworm()
 	placeflags()
 	carvedoors()
 	carvescuts()
 	fillends()
+	startend()
+	installdoors()
 end
 
 -----------
@@ -1058,10 +1063,11 @@ function placeroom(r)
 	c=getrnd(cand)
 	r.x=c.x
 	r.y=c.y
-	
+	add(rooms,r)
 	for _x=0,r.w-1 do
 		for _y=0,r.h-1 do
 			mset(_x+r.x,_y+r.y,1)
+			roomap[_x+r.x][_y+r.y]=#rooms
 		end
 	end
 	return true
@@ -1217,6 +1223,7 @@ function carvedoors()
 		
 		if #drs>0 then
 			local d=getrnd(drs)
+			add(doors,d)
 			mset(d.x,d.y,1)
 			growflag(d.x,d.y,d.f1)
 		end
@@ -1249,6 +1256,7 @@ function carvescuts()
 		
 		if #drs>0 then
 			local d=getrnd(drs)
+			add(doors,d)
 			mset(d.x,d.y,1)
 			cut+=1
 		end
@@ -1271,6 +1279,62 @@ function fillends()
 			mset(c.x,c.y,2)
 		end
 	until #cand==0
+end
+
+function isdoor(x,y)
+	for i=1,4 do
+		if inbounds(x+dirx[i],y+diry[i]) and roomap[x+dirx[i]][y+diry[i]]!=0 then
+			return true
+		end
+	end
+	return false
+end
+
+function installdoors()
+	for d in all(doors) do
+		if iswalkable(d.x,d.y) and isdoor(d.x,d.y) then
+			mset(d.x,d.y,13)
+		end
+	end
+end
+
+-----------
+-- decoration
+-----------
+
+function startend()
+	local high,low,px,py,ex,ey=0,9999
+	repeat
+		px,py=flr(rnd(16)),flr(rnd(16))
+	until iswalkable(px,py)
+	
+	calcdist(px,py)
+	for x=0,15 do
+		for y=0,15 do
+			local tmp=distmap[x][y]
+			if iswalkable(x,y) and tmp>high then
+				px,py,high=x,y,tmp
+			end
+		end
+	end
+	calcdist(px,py)
+	high=0
+	for x=0,15 do
+		for y=0,15 do
+			local tmp=distmap[x][y]
+			if tmp>high and cancarve(x,y,false) then
+				ex,ey,high=x,y,tmp
+			end
+			if tmp>=0 and tmp<low and cancarve(x,y,false) then
+				px,py,low=x,y,tmp
+			end
+		end
+	end
+	
+	mset(px,py,15)
+	p_mob.x=px
+	p_mob.y=py
+	mset(ex,ey,14)
 end
 
 __gfx__
