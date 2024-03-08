@@ -1005,6 +1005,36 @@ function cansee(m1,m2)
 	return dist(m1.x,m1.y,m2.x,m2.y)<=m1.los and los(m1.x,m1.y,m2.x,m2.y)
 end
 
+function spawnmobs()
+	local minmons=3
+	local placed,rpot=0,{}
+	
+	for r in all(rooms) do
+		add(rpot,r)
+	end
+	
+	repeat
+		local r=getrnd(rpot)
+		placed+=infestroom(r)
+		del(rpot,r)
+	until #rpot==0 or placed>minmons
+end
+
+function infestroom(r)
+	local target=2+flr(rnd(3))
+	local x,y=0,0
+	
+	for i=1,target do
+		repeat
+			x=r.x+flr(rnd(r.w))
+			y=r.y+flr(rnd(r.h))
+		until iswalkable(x,y,"checkmobs")
+		addmob(2,x,y)
+	end
+	
+	return target
+end
+
 -------------------------
 -- items
 -------------------------
@@ -1042,6 +1072,9 @@ end
 function mapgen()
 	copymap(48,0)
 	
+	mob={}
+	add(mob,p_mob)
+	
 	rooms={}
 	roomap=blankmap(0)
 	doors={}
@@ -1054,6 +1087,8 @@ function mapgen()
 	startend()
 	fillends()
 	installdoors()
+	
+	spawnmobs()
 end
 
 -----------
