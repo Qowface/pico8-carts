@@ -24,6 +24,11 @@ Repo for my PICO-8 carts folder. Mainly tutorial projects and small demos.
 - Lunar Lander tutorial from "Game Development with PICO-8" zine by MBoffin
     - https://mboffin.itch.io/gamedev-with-pico-8-issue1
 
+### oop.p8
+- "Object Oriented Programming in PICO-8" tutorial from Kevin Makes Games
+    - https://www.youtube.com/@kevinmakesgames
+    - https://www.youtube.com/watch?v=X9qKODb-wXg
+
 ### particles.p8
 - Particle Systems example from "Game Development with PICO-8" zine by MBoffin
     - https://mboffin.itch.io/gamedev-with-pico-8-issue1
