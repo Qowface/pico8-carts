@@ -16,6 +16,11 @@ Repo for my PICO-8 carts folder. Mainly tutorial projects and small demos.
 - Coroutines example from "Game Development with PICO-8" zine by MBoffin
     - https://mboffin.itch.io/gamedev-with-pico-8-issue1
 
+### flappy.p8
+- "Complete Flappy Bird Tutorial in Pico-8" from SpaceCat
+    - https://www.youtube.com/@spacecat88
+    - https://www.youtube.com/watch?v=ubDItG3lGe4
+
 ### gamestates.p8
 - Game States example from "Game Development with PICO-8" zine by MBoffin
     - https://mboffin.itch.io/gamedev-with-pico-8-issue1
