@@ -1,5 +1,37 @@
 pico-8 cartridge // http://www.pico-8.com
 version 42
+__lua__
+--platformer
+
+function _init()
+	player={
+		sp=1, --sprite #
+		x=59, --x position
+		y=59, --y position
+		w=8, --width
+		h=8, --height
+		flp=false, --flip sprite?
+		dx=0, --delta x
+		dy=0, --delta y
+		max_dx=2, --limit dx
+		max_dy=3, --limit dy
+		acc=0.5, --acceleration
+		boost=4, --jump force
+		anim=0, --animation timing
+		running=false, --movement status
+		jumping=false, --""
+		falling=false, --""
+		sliding=false, --""
+		landed=false --""
+	}
+end
+
+function _draw()
+	cls()
+	map(0,0)
+	spr(player.sp,player.x,player.y,1,1,player.flp)
+end
+
 __gfx__
 0000000000444440004444400004444400044444000444440004444400044444c004444400000000000000000000000000000000000000000000000000000000
 0000000000ccccc000ccccc00ccccccc0c0cccccc00cccccc0cccccc00cccccc0ccccccc04444400000000000000000000000000000000000000000000000000
