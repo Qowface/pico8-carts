@@ -4,6 +4,10 @@ Repo for my PICO-8 carts folder. Mainly tutorial projects and small demos.
 
 ## Carts
 
+### adv_movement.p8
+- Advanced movement example from Nerdy Teachers
+    - https://nerdyteachers.com/PICO-8/Game_Mechanics/?tutorial=10
+
 ### adventure.p8
 - "PICO-8: Top-Down Adventure Game Tutorial" by MBoffin
     - https://mboffin.itch.io/pico-8-top-down-adventure-game-tutorial
@@ -42,10 +46,18 @@ Repo for my PICO-8 carts folder. Mainly tutorial projects and small demos.
 - Example from PICO-8 User Manual
     - https://www.lexaloffle.com/dl/docs/pico-8_manual.html
 
+### platformer.p8
+- Platformer tutorial from Nerdy Teachers
+    - https://nerdyteachers.com/Explain/Platformer/
+    - https://www.youtube.com/playlist?list=PLyhkEEoUjSQtUiSOu-N4BIrHBFtLNjkyE
+
 ### roguelike.p8
 - Roguelike tutorial from Lazy Devs Academy
     - https://www.youtube.com/@LazyDevs
     - https://www.youtube.com/playlist?list=PLea8cjCua_P3LL7J1Q9b6PJua0A-96uUS
+
+### roguelike_tilemask.p8
+- Tool to generate tile signatures for walls for Roguelike.
 
 ### shmup.p8
 - Shmup tutorial from Lazy Devs Academy
